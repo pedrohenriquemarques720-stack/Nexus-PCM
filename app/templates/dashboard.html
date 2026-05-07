@@ -332,7 +332,7 @@
     </div>
 
     <script>
-        const API_BASE = '/api/v1';
+        const API_BASE = window.location.origin + '/api/v1';
         let token = localStorage.getItem('token');
         let currentUser = null;
         
@@ -399,7 +399,8 @@
                 });
                 const metrics = await response.json();
                 
-                const assetsResponse = await fetch(`${API_BASE}/assets`, {
+                // Em vez de /assets, use /assets/all
+                const response = await fetch(`${API_BASE}/assets/all`); {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const assets = await assetsResponse.json();
@@ -456,7 +457,8 @@
             document.getElementById('pageSubtitle').innerHTML = 'Gestão de ativos industriais';
             
             try {
-                const response = await fetch(`${API_BASE}/assets`, {
+                // Em vez de /assets, use /assets/all
+                const response = await fetch(`${API_BASE}/assets/all`); {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const assets = await response.json();
@@ -507,7 +509,8 @@
                 location: document.getElementById('assetLocation').value,
                 critical_level: parseInt(document.getElementById('assetCriticality').value)
             };
-            const response = await fetch(`${API_BASE}/assets`, {
+            // Em vez de /assets, use /assets/all
+            const response = await fetch(`${API_BASE}/assets/all`); {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
