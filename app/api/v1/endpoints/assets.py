@@ -174,11 +174,12 @@ async def delete_asset(
     asset.is_active = False
     await db.commit()
 
-    @router.get("/public", response_model=List[AssetResponse])
-async def get_assets_public(
+    @router.get("/all", response_model=List[AssetResponse])
+async def get_all_assets(
     db: AsyncSession = Depends(get_db)
 ):
-    """Endpoint público para testes (sem autenticação)"""
+    """Endpoint público - SEM AUTENTICAÇÃO"""
+    from sqlalchemy import select
     query = select(Asset).where(Asset.is_active == True).limit(100)
     result = await db.execute(query)
     assets = result.scalars().all()
