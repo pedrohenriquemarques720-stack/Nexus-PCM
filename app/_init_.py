@@ -1,1 +1,0 @@
-# Arquivo vazio - marca a pasta como pacote Python
