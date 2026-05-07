@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus PCM</title>
+    <title>Nexus PCM - Manutenção Industrial</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -13,9 +13,19 @@
         .card { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 20px; transition: all 0.3s; }
         .card:hover { transform: translateY(-4px); border-color: #2563EB; }
         .btn-primary { background: linear-gradient(135deg, #2563EB, #8B5CF6); color: white; padding: 10px 24px; border-radius: 12px; }
+        .btn-outline { border: 1px solid #2563EB; color: #2563EB; background: transparent; padding: 10px 24px; border-radius: 12px; }
         .nav-item { transition: all 0.3s; cursor: pointer; }
         .nav-item:hover { background: #F1F5F9; }
         .nav-item.active { background: linear-gradient(135deg, rgba(37,99,235,0.1), rgba(139,91,246,0.1)); color: #2563EB; border-left: 3px solid #2563EB; }
+        .badge-green { background: #ECFDF5; color: #059669; }
+        .badge-blue { background: #EFF6FF; color: #2563EB; }
+        .badge-red { background: #FEF2F2; color: #DC2626; }
+        .badge-yellow { background: #FEF3C7; color: #D97706; }
+        .badge-purple { background: #F3E8FF; color: #7C3AED; }
+        .tab-active { border-bottom: 2px solid #2563EB; color: #2563EB; font-weight: 600; }
+        .tab-inactive { color: #6B7280; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; border-radius: 24px; max-width: 500px; width: 90%; padding: 32px; }
     </style>
 </head>
 <body>
@@ -38,7 +48,7 @@
                     <i class="fas fa-tachometer-alt w-5"></i> Dashboard
                 </div>
                 
-                <div class="text-xs text-gray-400 uppercase tracking-wider mt-4 mb-2 px-3">Ativos</div>
+                <div class="text-xs text-gray-400 uppercase tracking-wider mt-4 mb-2 px-3">ATIVOS</div>
                 <div onclick="loadPage('ativos_lista')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
                     <i class="fas fa-microchip w-5"></i> Lista Completa de Ativos
                 </div>
@@ -52,7 +62,7 @@
                     <i class="fas fa-map-marker-alt w-5"></i> Posições (APU)
                 </div>
                 
-                <div class="text-xs text-gray-400 uppercase tracking-wider mt-4 mb-2 px-3">Ordens de Serviço</div>
+                <div class="text-xs text-gray-400 uppercase tracking-wider mt-4 mb-2 px-3">ORDENS DE SERVIÇO</div>
                 <div onclick="loadPage('os_planejadas')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
                     <i class="fas fa-calendar-check text-green-600 w-5"></i> Planejadas (Verde)
                 </div>
@@ -63,8 +73,8 @@
                     <i class="fas fa-exclamation-triangle text-red-600 w-5"></i> Corretivas (Vermelha)
                 </div>
                 
-                <div class="text-xs text-gray-400 uppercase tracking-wider mt-4 mb-2 px-3">Recursos</div>
-                <div onclick="loadPage('rh')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
+                <div class="text-xs text-gray-400 uppercase tracking-wider mt-4 mb-2 px-3">RECURSOS</div>
+                <div onclick="loadPage('rh_usuarios')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
                     <i class="fas fa-users w-5"></i> RH / Usuários
                 </div>
                 <div onclick="loadPage('tee_card')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
@@ -73,13 +83,13 @@
                 <div onclick="loadPage('calendario_mp')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
                     <i class="fas fa-calendar-alt w-5"></i> Calendário MP
                 </div>
-                <div onclick="loadPage('falhas')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
+                <div onclick="loadPage('falha_equipamento')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
                     <i class="fas fa-bug w-5"></i> Falha de Equipamento
                 </div>
                 
-                <div class="text-xs text-gray-400 uppercase tracking-wider mt-4 mb-2 px-3">Análise de Dados</div>
+                <div class="text-xs text-gray-400 uppercase tracking-wider mt-4 mb-2 px-3">ANÁLISE DE DADOS</div>
                 <div onclick="loadPage('indicadores')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
-                    <i class="fas fa-chart-line w-5"></i> MTBF / MTTR
+                    <i class="fas fa-chart-simple w-5"></i> MTBF / MTTR
                 </div>
                 <div onclick="loadPage('relatorios')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
                     <i class="fas fa-file-alt w-5"></i> Relatórios
@@ -91,7 +101,7 @@
         <main class="flex-1 overflow-y-auto">
             <header class="sticky top-0 bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-4">
                 <h1 class="text-2xl font-bold gradient-text" id="pageTitle">Dashboard</h1>
-                <p class="text-sm text-gray-500" id="pageSubtitle">Visão geral do sistema</p>
+                <p class="text-sm text-gray-500" id="pageSubtitle">Visão geral do sistema de manutenção</p>
             </header>
             
             <div id="contentArea" class="p-8">
@@ -100,321 +110,346 @@
         </main>
     </div>
 
+    <!-- Modal Novo Ativo -->
+    <div id="modalNovoAtivo" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Novo Ativo</h2>
+                <button onclick="fecharModal('modalNovoAtivo')" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <form id="formNovoAtivo">
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Código *</label><input type="text" id="assetCode" class="w-full border border-gray-300 rounded-lg px-4 py-2" required></div>
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Nome *</label><input type="text" id="assetName" class="w-full border border-gray-300 rounded-lg px-4 py-2" required></div>
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Tipo</label><select id="assetType" class="w-full border border-gray-300 rounded-lg px-4 py-2"><option value="equipment">Equipamento</option><option value="machine">Máquina</option><option value="vehicle">Veículo</option></select></div>
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Localização (APU)</label><input type="text" id="assetLocation" class="w-full border border-gray-300 rounded-lg px-4 py-2" placeholder="Ex: APU Pump - Cabecote"></div>
+                <button type="submit" class="w-full btn-primary py-2">Criar Ativo</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Nova OS -->
+    <div id="modalNovaOS" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800" id="modalOSTitle">Nova Ordem de Serviço</h2>
+                <button onclick="fecharModal('modalNovaOS')" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <form id="formNovaOS">
+                <input type="hidden" id="osType" value="">
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Código *</label><input type="text" id="osCode" class="w-full border border-gray-300 rounded-lg px-4 py-2" required></div>
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Título *</label><input type="text" id="osTitle" class="w-full border border-gray-300 rounded-lg px-4 py-2" required></div>
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Ativo</label><select id="osAssetId" class="w-full border border-gray-300 rounded-lg px-4 py-2"></select></div>
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Descrição</label><textarea id="osDescription" class="w-full border border-gray-300 rounded-lg px-4 py-2" rows="3"></textarea></div>
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Prioridade</label><select id="osPriority" class="w-full border border-gray-300 rounded-lg px-4 py-2"><option value="1">1 - Baixa</option><option value="2">2 - Normal</option><option value="3">3 - Média</option><option value="4">4 - Alta</option><option value="5">5 - Urgente</option></select></div>
+                <button type="submit" class="w-full btn-primary py-2">Criar OS</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Fechar OS -->
+    <div id="modalFecharOS" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Fechar Ordem de Serviço</h2>
+                <button onclick="fecharModal('modalFecharOS')" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <form id="formFecharOS">
+                <input type="hidden" id="closeOSId" value="">
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Horas Trabalhadas *</label><input type="number" id="closeHours" step="0.5" class="w-full border border-gray-300 rounded-lg px-4 py-2" required></div>
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Solução Aplicada</label><textarea id="closeSolution" class="w-full border border-gray-300 rounded-lg px-4 py-2" rows="3" placeholder="Descreva o que foi feito..."></textarea></div>
+                <button type="submit" class="w-full btn-primary py-2">Fechar OS</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Novo Usuário -->
+    <div id="modalNovoUsuario" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Novo Usuário</h2>
+                <button onclick="fecharModal('modalNovoUsuario')" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+            </div>
+            <form id="formNovoUsuario">
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Nome Completo *</label><input type="text" id="userFullName" class="w-full border border-gray-300 rounded-lg px-4 py-2" required></div>
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">E-mail *</label><input type="email" id="userEmail" class="w-full border border-gray-300 rounded-lg px-4 py-2" required></div>
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Usuário *</label><input type="text" id="userUsername" class="w-full border border-gray-300 rounded-lg px-4 py-2" required></div>
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Tipo</label><select id="userType" class="w-full border border-gray-300 rounded-lg px-4 py-2"><option value="solicitante">Solicitante</option><option value="manutentor">Manutentor</option><option value="engenheiro">Engenheiro</option><option value="admin">Administrador</option></select></div>
+                <div class="mb-4"><label class="block text-gray-600 text-sm mb-2">Senha</label><input type="password" id="userPassword" value="123456" class="w-full border border-gray-300 rounded-lg px-4 py-2"></div>
+                <button type="submit" class="w-full btn-primary py-2">Criar Usuário</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         const API_BASE = window.location.origin + '/api/v1';
-        
         let currentAssets = [];
-        let currentOrders = { abertas: [], fechadas: [] };
+        let currentPage = 'dashboard';
         
-        async function loadPage(page) {
-            const title = document.getElementById('pageTitle');
-            const content = document.getElementById('contentArea');
-            
-            // Ativar item do menu
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            if (event && event.currentTarget) event.currentTarget.classList.add('active');
-            
-            if (page === 'dashboard') {
-                title.innerText = 'Dashboard';
-                title.classList.add('gradient-text');
-                content.innerHTML = `
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div class="card p-6 text-center"><div class="text-3xl font-bold text-blue-600" id="totalAssets">0</div><div class="text-gray-500">Ativos</div></div>
-                        <div class="card p-6 text-center"><div class="text-3xl font-bold text-purple-600" id="totalOrders">0</div><div class="text-gray-500">OS Abertas</div></div>
-                        <div class="card p-6 text-center"><div class="text-3xl font-bold text-pink-600" id="avgMtbf">0</div><div class="text-gray-500">MTBF (h)</div></div>
-                        <div class="card p-6 text-center"><div class="text-3xl font-bold text-green-600" id="availability">0</div><div class="text-gray-500">Disponibilidade</div></div>
-                    </div>
-                    <div class="card p-6">
-                        <h2 class="text-xl font-semibold mb-4">Últimos Ativos</h2>
-                        <div id="recentAssetsList"></div>
-                    </div>
-                `;
-                
-                // Carregar dados
-                const assetsResp = await fetch(`${API_BASE}/assets`);
-                const assets = await assetsResp.json();
-                currentAssets = assets;
-                document.getElementById('totalAssets').innerText = assets.length;
-                
-                const ordersResp = await fetch(`${API_BASE}/work-orders`);
-                const orders = await ordersResp.json();
-                const abertas = orders.filter(o => !o.is_closed);
-                document.getElementById('totalOrders').innerText = abertas.length;
-                
-                const recentHtml = assets.slice(0,5).map(a => `
-                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span class="text-blue-600">${a.code}</span>
-                        <span>${a.name}</span>
-                        <span class="text-gray-500">${a.location || '-'}</span>
-                    </div>
-                `).join('');
-                document.getElementById('recentAssetsList').innerHTML = recentHtml || '<div class="text-gray-500">Nenhum ativo cadastrado</div>';
-            }
-            
-            else if (page === 'ativos_lista') {
-                title.innerText = 'Lista Completa de Ativos';
-                await loadAssetsList(content);
-            }
-            else if (page === 'ativos_principais') {
-                title.innerText = 'Ativos Principais';
-                await loadAssetsList(content);
-            }
-            else if (page === 'ativos_sub') {
-                title.innerText = 'Sub-Ativos';
-                content.innerHTML = '<div class="card p-6 text-center text-gray-500">Funcionalidade em desenvolvimento</div>';
-            }
-            else if (page === 'ativos_posicoes') {
-                title.innerText = 'Posições (APU)';
-                await loadPositions(content);
-            }
-            
-            else if (page === 'os_planejadas') {
-                title.innerText = 'Ordens Planejadas (Verde)';
-                await loadOrdersByType('planned', content, 'verde');
-            }
-            else if (page === 'os_preventivas') {
-                title.innerText = 'Ordens Preventivas (Azul)';
-                await loadOrdersByType('preventive', content, 'azul');
-            }
-            else if (page === 'os_corretivas') {
-                title.innerText = 'Ordens Corretivas (Vermelha)';
-                await loadOrdersByType('corrective', content, 'vermelha');
-            }
-            
-            else if (page === 'rh') {
-                title.innerText = 'RH / Usuários';
-                await loadUsers(content);
-            }
-            else if (page === 'tee_card') {
-                title.innerText = 'Tee Card';
-                await loadTeeCard(content);
-            }
-            else if (page === 'calendario_mp') {
-                title.innerText = 'Calendário MP';
-                content.innerHTML = '<div class="card p-6 text-center text-gray-500">Em desenvolvimento</div>';
-            }
-            else if (page === 'falhas') {
-                title.innerText = 'Falha de Equipamento';
-                content.innerHTML = '<div class="card p-6 text-center text-gray-500">Em desenvolvimento</div>';
-            }
-            else if (page === 'indicadores') {
-                title.innerText = 'MTBF / MTTR';
-                content.innerHTML = '<div class="card p-6 text-center text-gray-500">Em desenvolvimento</div>';
-            }
-            else if (page === 'relatorios') {
-                title.innerText = 'Relatórios';
-                content.innerHTML = '<div class="card p-6 text-center text-gray-500">Em desenvolvimento</div>';
+        // ==================== FUNÇÕES GERAIS ====================
+        async function apiFetch(url, options = {}) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return [];
             }
         }
         
-        async function loadAssetsList(container) {
-            const response = await fetch(`${API_BASE}/assets`);
-            const assets = await response.json();
+        function abrirModal(modalId) { document.getElementById(modalId).style.display = 'flex'; }
+        function fecharModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+        
+        // ==================== DASHBOARD ====================
+        async function loadDashboard() {
+            document.getElementById('pageTitle').innerHTML = 'Dashboard';
+            document.getElementById('pageSubtitle').innerHTML = 'Visão geral do sistema de manutenção';
+            
+            const assets = await apiFetch(`${API_BASE}/assets`);
+            const orders = await apiFetch(`${API_BASE}/work-orders`);
+            const users = await apiFetch(`${API_BASE}/users`);
+            
+            const abertas = orders.filter(o => !o.is_closed).length;
+            const fechadas = orders.filter(o => o.is_closed).length;
+            const planejadas = orders.filter(o => o.order_type === 'planned').length;
+            const preventivas = orders.filter(o => o.order_type === 'preventive').length;
+            const corretivas = orders.filter(o => o.order_type === 'corrective').length;
+            
+            document.getElementById('contentArea').innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="card p-6 text-center"><div class="text-3xl font-bold text-blue-600">${assets.length}</div><div class="text-gray-500">Ativos</div></div>
+                    <div class="card p-6 text-center"><div class="text-3xl font-bold text-yellow-600">${abertas}</div><div class="text-gray-500">OS Abertas</div></div>
+                    <div class="card p-6 text-center"><div class="text-3xl font-bold text-green-600">${fechadas}</div><div class="text-gray-500">OS Fechadas</div></div>
+                    <div class="card p-6 text-center"><div class="text-3xl font-bold text-purple-600">${users.length}</div><div class="text-gray-500">Usuários</div></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="card p-6"><div class="flex items-center justify-between mb-4"><h3 class="font-semibold">Planejadas</h3><span class="badge-green px-2 py-1 rounded-full text-xs">Verde</span></div><p class="text-2xl font-bold text-gray-800">${planejadas}</p><p class="text-sm text-gray-500">Ordens</p></div>
+                    <div class="card p-6"><div class="flex items-center justify-between mb-4"><h3 class="font-semibold">Preventivas</h3><span class="badge-blue px-2 py-1 rounded-full text-xs">Azul</span></div><p class="text-2xl font-bold text-gray-800">${preventivas}</p><p class="text-sm text-gray-500">Ordens</p></div>
+                    <div class="card p-6"><div class="flex items-center justify-between mb-4"><h3 class="font-semibold">Corretivas</h3><span class="badge-red px-2 py-1 rounded-full text-xs">Vermelha</span></div><p class="text-2xl font-bold text-gray-800">${corretivas}</p><p class="text-sm text-gray-500">Ordens</p></div>
+                </div>
+                <div class="card p-6"><h2 class="text-xl font-semibold mb-4">Últimos Ativos Cadastrados</h2><div class="space-y-2">${assets.slice(0,5).map(a => `<div class="flex justify-between items-center py-2 border-b border-gray-100"><span class="text-blue-600">${a.code}</span><span>${a.name}</span><span class="text-gray-500">${a.location || '-'}</span></div>`).join('')}${assets.length === 0 ? '<div class="text-gray-500 text-center py-4">Nenhum ativo cadastrado</div>' : ''}</div></div>
+            `;
+        }
+        
+        // ==================== ATIVOS ====================
+        async function loadAtivosLista() {
+            document.getElementById('pageTitle').innerHTML = 'Lista Completa de Ativos';
+            document.getElementById('pageSubtitle').innerHTML = 'Todos os ativos da empresa';
+            const assets = await apiFetch(`${API_BASE}/assets`);
             currentAssets = assets;
-            
-            container.innerHTML = `
-                <div class="card p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-semibold">Ativos Cadastrados</h2>
-                        <button onclick="openNewAsset()" class="btn-primary text-sm px-4 py-2">+ Novo Ativo</button>
-                    </div>
-                    <table class="w-full">
-                        <thead><tr class="text-left text-gray-500 border-b"><th class="py-2">Código</th><th>Nome</th><th>Tipo</th><th>Localização</th><th>Status</th><th>Ações</th></tr></thead>
-                        <tbody>${assets.map(a => `<tr><td class="text-blue-600 py-2">${a.code}</td><td>${a.name}</td><td>${a.asset_type}</td><td>${a.location || '-'}</td><td><span class="px-2 py-1 rounded-full text-xs ${a.status === 'active' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}">${a.status === 'active' ? 'Ativo' : 'Inativo'}</span></td><td><button onclick="deleteAsset('${a.id}')" class="text-red-500"><i class="fas fa-trash"></i></button></td></tr>`).join('')}</tbody>
-                    </table>
-                </div>
+            document.getElementById('contentArea').innerHTML = `
+                <div class="card p-6"><div class="flex justify-between items-center mb-6"><h2 class="text-xl font-semibold">Ativos Cadastrados</h2><button onclick="abrirModal('modalNovoAtivo')" class="btn-primary text-sm px-4 py-2">+ Novo Ativo</button></div>
+                <div class="overflow-x-auto"><table class="w-full"><thead><tr class="text-left text-gray-500 border-b"><th class="py-2">Código</th><th>Nome</th><th>Tipo</th><th>Localização (APU)</th><th>Horas</th><th>Falhas</th><th>Status</th><th>Ações</th></tr></thead>
+                <tbody>${assets.map(a => `<tr><td class="text-blue-600 py-2">${a.code}</td><td>${a.name}</td><td>${a.asset_type}</td><td class="text-gray-500">${a.location || '-'}</td><td>${a.total_operating_hours || 0}</td><td>${a.failure_count || 0}</td><td><span class="px-2 py-1 rounded-full text-xs ${a.status === 'active' ? 'badge-green' : 'badge-yellow'}">${a.status === 'active' ? 'Ativo' : 'Manutenção'}</span></td><td><button onclick="deletarAtivo('${a.id}')" class="text-red-500"><i class="fas fa-trash"></i></button></td></tr>`).join('')}</tbody></table></div></div>
             `;
         }
         
-        async function loadPositions(container) {
-            const response = await fetch(`${API_BASE}/assets`);
-            const assets = await response.json();
-            const positions = [...new Set(assets.map(a => a.location).filter(l => l))];
-            
-            container.innerHTML = `
-                <div class="card p-6">
-                    <h2 class="text-xl font-semibold mb-4">Posições / APU</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        ${positions.map(p => `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200">📍 ${p}</div>`).join('')}
-                        ${positions.length === 0 ? '<div class="text-gray-500">Nenhuma posição cadastrada</div>' : ''}
-                    </div>
-                    <div class="mt-6">
-                        <h3 class="font-semibold mb-2">APU Pump</h3>
-                        <div class="bg-gray-50 p-3 rounded-lg">
-                            <div class="text-sm text-gray-600">Cabecote</div>
-                            <div class="text-sm text-gray-600">Montagem de bombas</div>
-                            <div class="text-sm text-gray-600">Teste de bombas</div>
-                            <div class="text-sm text-gray-600">Acabamento de Bombas</div>
-                        </div>
-                    </div>
-                </div>
-            `;
+        async function loadAtivosPrincipais() {
+            document.getElementById('pageTitle').innerHTML = 'Ativos Principais';
+            document.getElementById('pageSubtitle').innerHTML = 'Ativos de maior criticidade';
+            const assets = await apiFetch(`${API_BASE}/assets`);
+            const principais = assets.filter(a => a.critical_level >= 4);
+            document.getElementById('contentArea').innerHTML = `<div class="card p-6"><h2 class="text-xl font-semibold mb-4">Ativos Críticos</h2><div class="space-y-3">${principais.map(a => `<div class="bg-gray-50 p-4 rounded-lg border-l-4 border-red-500"><div class="flex justify-between"><span class="font-semibold">${a.code} - ${a.name}</span><span class="badge-red px-2 py-1 rounded-full text-xs">Crítico</span></div><div class="text-sm text-gray-500 mt-1">📍 ${a.location || 'Local não definido'}</div></div>`).join('')}${principais.length === 0 ? '<div class="text-gray-500 text-center py-4">Nenhum ativo crítico cadastrado</div>' : ''}</div></div>`;
         }
         
-        async function loadOrdersByType(type, container, color) {
-            const response = await fetch(`${API_BASE}/work-orders?order_type=${type}`);
-            const orders = await response.json();
-            
+        async function loadSubAtivos() {
+            document.getElementById('pageTitle').innerHTML = 'Sub-Ativos';
+            document.getElementById('pageSubtitle').innerHTML = 'Componentes e partes dos ativos principais';
+            document.getElementById('contentArea').innerHTML = `<div class="card p-6"><div class="grid grid-cols-1 md:grid-cols-2 gap-4">${(await apiFetch(`${API_BASE}/assets`)).map(a => `<div class="bg-gray-50 p-4 rounded-lg"><h3 class="font-semibold">${a.name}</h3><div class="pl-4 mt-2 text-sm text-gray-500"><div>🔧 Componentes:</div><div>- Motor ${a.asset_type === 'equipment' ? 'principal' : 'secundário'}</div><div>- Sistema de controle</div><div>- Painel elétrico</div></div></div>`).join('')}</div><div class="mt-4 text-sm text-gray-500 text-center">* Para adicionar sub-ativos, edite o ativo principal e adicione componentes</div></div>`;
+        }
+        
+        async function loadPosicoesAPU() {
+            document.getElementById('pageTitle').innerHTML = 'Posições (APU)';
+            document.getElementById('pageSubtitle').innerHTML = 'Localização dos ativos na planta';
+            const assets = await apiFetch(`${API_BASE}/assets`);
+            const posicoes = [...new Set(assets.map(a => a.location).filter(l => l && l.trim() !== ''))];
+            document.getElementById('contentArea').innerHTML = `<div class="card p-6"><h2 class="text-xl font-semibold mb-4">📍 APU - Áreas da Planta</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"><div class="bg-blue-50 p-4 rounded-lg"><h3 class="font-semibold text-blue-700">APU Pump</h3><div class="pl-4 mt-2 space-y-1 text-sm"><div>• Cabecote</div><div>• Montagem de bombas</div><div>• Teste de bombas</div><div>• Acabamento de Bombas</div></div></div><div class="bg-green-50 p-4 rounded-lg"><h3 class="font-semibold text-green-700">Outras Áreas</h3><div class="pl-4 mt-2 space-y-1 text-sm">${posicoes.map(p => `<div>• ${p}</div>`).join('')}</div></div></div><div class="bg-gray-50 p-4 rounded-lg"><h3 class="font-semibold mb-2">Ativos por Posição</h3>${posicoes.map(p => `<div class="mt-3"><div class="font-medium text-gray-700">${p}</div><div class="pl-4 text-sm text-gray-500">${assets.filter(a => a.location === p).map(a => a.name).join(', ')}</div></div>`).join('')}${posicoes.length === 0 ? '<div class="text-gray-500">Cadastre ativos com localização para visualizar aqui</div>' : ''}</div></div>`;
+        }
+        
+        // ==================== ORDENS DE SERVIÇO ====================
+        async function loadOrdensPorTipo(tipo, cor, titulo) {
+            document.getElementById('pageTitle').innerHTML = titulo;
+            document.getElementById('pageSubtitle').innerHTML = `Ordens ${cor}`;
+            const orders = await apiFetch(`${API_BASE}/work-orders?order_type=${tipo}`);
             const abertas = orders.filter(o => !o.is_closed);
             const fechadas = orders.filter(o => o.is_closed);
+            const assets = await apiFetch(`${API_BASE}/assets`);
             
-            container.innerHTML = `
-                <div class="card p-6">
-                    <div class="flex gap-4 border-b border-gray-200 mb-4">
-                        <button onclick="window.showOrdersTab('abertas')" id="tabAbertas" class="px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600">Abertas (${abertas.length})</button>
-                        <button onclick="window.showOrdersTab('fechadas')" id="tabFechadas" class="px-4 py-2 text-gray-500">Fechadas (${fechadas.length})</button>
-                    </div>
-                    <div id="ordersTabContent" class="mt-4"></div>
-                    <div class="mt-6 pt-4 border-t border-gray-200">
-                        <button onclick="openNewOrder('${type}')" class="btn-primary text-sm px-4 py-2">+ Nova OS</button>
-                    </div>
-                </div>
+            document.getElementById('contentArea').innerHTML = `
+                <div class="card p-6"><div class="flex gap-4 border-b border-gray-200 mb-4"><button onclick="window.mostrarAbaOS('abertas', '${tipo}')" id="tabAbertas" class="px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600">Abertas (${abertas.length})</button><button onclick="window.mostrarAbaOS('fechadas', '${tipo}')" id="tabFechadas" class="px-4 py-2 text-gray-500">Fechadas (${fechadas.length})</button></div>
+                <div id="osTabContent"></div><div class="mt-6 pt-4 border-t border-gray-200"><button onclick="abrirNovaOS('${tipo}')" class="btn-primary text-sm px-4 py-2">+ Nova OS ${cor}</button></div></div>
             `;
-            
-            window.currentOrdersData = { abertas, fechadas };
-            window.showOrdersTab = (tab) => {
-                const orders = tab === 'abertas' ? abertas : fechadas;
-                const contentDiv = document.getElementById('ordersTabContent');
+            window.currentOrdersData = { abertas, fechadas, assets, tipo };
+            window.mostrarAbaOS = (tab, tipo) => {
+                const orders = tab === 'abertas' ? window.currentOrdersData.abertas : window.currentOrdersData.fechadas;
+                const contentDiv = document.getElementById('osTabContent');
                 document.getElementById('tabAbertas').className = tab === 'abertas' ? 'px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600' : 'px-4 py-2 text-gray-500';
                 document.getElementById('tabFechadas').className = tab === 'fechadas' ? 'px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600' : 'px-4 py-2 text-gray-500';
-                
-                if (orders.length === 0) {
-                    contentDiv.innerHTML = '<div class="text-center py-8 text-gray-500">Nenhuma ordem encontrada</div>';
-                    return;
-                }
-                
-                contentDiv.innerHTML = `
-                    <table class="w-full">
-                        <thead><tr class="text-left text-gray-500 border-b"><th class="py-2">Código</th><th>Título</th><th>Ativo</th><th>Data</th><th>Ações</th></tr></thead>
-                        <tbody>${orders.map(o => `<tr><td class="text-blue-600 py-2">${o.code}</td><td>${o.title}</td><td>-</td><td>${new Date(o.created_at).toLocaleDateString()}</td><td>${!o.is_closed ? `<button onclick="closeOrder('${o.id}')" class="text-green-600">Fechar</button>` : '<span class="text-gray-400">Concluída</span>'}</td></tr>`).join('')}</tbody>
-                    </table>
-                `;
+                if (orders.length === 0) { contentDiv.innerHTML = '<div class="text-center py-8 text-gray-500">Nenhuma ordem encontrada</div>'; return; }
+                contentDiv.innerHTML = `<table class="w-full"><thead><tr class="text-left text-gray-500 border-b"><th class="py-2">Código</th><th>Título</th><th>Ativo</th><th>Prioridade</th><th>Ações</th></tr></thead><tbody>${orders.map(o => `<tr><td class="text-blue-600 py-2">${o.code}</td><td>${o.title}</td><td>${window.currentOrdersData.assets.find(a => a.id === o.asset_id)?.name || '-'}</td><td><span class="px-2 py-1 rounded-full text-xs ${o.priority >= 4 ? 'badge-red' : 'badge-yellow'}">${o.priority}/5</span></td><td>${!o.is_closed ? `<button onclick="abrirFecharOS('${o.id}')" class="text-green-600">Fechar</button>` : '<span class="text-gray-400">Concluída</span>'}</td></tr>`).join('')}</tbody></table>`;
             };
-            window.showOrdersTab('abertas');
+            window.mostrarAbaOS('abertas', tipo);
         }
         
-        async function loadUsers(container) {
-            const response = await fetch(`${API_BASE}/users`);
-            const users = await response.json();
+        async function loadOSPlanejadas() { await loadOrdensPorTipo('planned', 'Verde', 'Ordens Planejadas (Verde)'); }
+        async function loadOSPreventivas() { await loadOrdensPorTipo('preventive', 'Azul', 'Ordens Preventivas (Azul)'); }
+        async function loadOSCorretivas() { await loadOrdensPorTipo('corrective', 'Vermelha', 'Ordens Corretivas (Vermelha)'); }
+        
+        // ==================== RH / USUÁRIOS ====================
+        async function loadRHUsuarios() {
+            document.getElementById('pageTitle').innerHTML = 'RH / Usuários';
+            document.getElementById('pageSubtitle').innerHTML = 'Gestão de manutentores, engenheiros e solicitantes';
+            const users = await apiFetch(`${API_BASE}/users`);
+            const manutentores = users.filter(u => u.user_type === 'manutentor');
+            const engenheiros = users.filter(u => u.user_type === 'engenheiro');
+            const solicitantes = users.filter(u => u.user_type === 'solicitante');
             
-            container.innerHTML = `
-                <div class="card p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-semibold">Usuários</h2>
-                        <button onclick="openNewUser()" class="btn-primary text-sm px-4 py-2">+ Novo Usuário</button>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead><tr class="text-left text-gray-500 border-b"><th class="py-2">Nome</th><th>E-mail</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead>
-                            <tbody>${users.map(u => `<tr><td class="py-2">${u.full_name}</tr><td>${u.email}</td><td><span class="px-2 py-1 rounded-full text-xs ${u.user_type === 'manutentor' ? 'bg-blue-100 text-blue-600' : u.user_type === 'engenheiro' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-600'}">${u.user_type}</span></td><td><span class="px-2 py-1 rounded-full text-xs ${u.is_active ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">${u.is_active ? 'Ativo' : 'Inativo'}</span></td><td><button onclick="deleteUser('${u.id}')" class="text-red-500"><i class="fas fa-trash"></i></button></td></tr>`).join('')}</tbody>
-                        <tr>
-                    </div>
-                </div>
+            document.getElementById('contentArea').innerHTML = `
+                <div class="card p-6 mb-6"><div class="flex justify-between items-center mb-4"><h2 class="text-xl font-semibold">Manutentores</h2><button onclick="abrirModal('modalNovoUsuario')" class="btn-primary text-sm px-4 py-2">+ Novo</button></div><div class="space-y-2">${manutentores.map(u => `<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"><div><span class="font-medium">${u.full_name}</span><span class="text-sm text-gray-500 ml-2">${u.specialty || 'Sem especialidade'}</span></div><div><span class="text-sm text-gray-500">${u.email}</span><button onclick="deletarUsuario('${u.id}')" class="ml-4 text-red-500"><i class="fas fa-trash"></i></button></div></div>`).join('')}${manutentores.length === 0 ? '<div class="text-gray-500 text-center py-4">Nenhum manutentor cadastrado</div>' : ''}</div></div>
+                <div class="card p-6 mb-6"><h2 class="text-xl font-semibold mb-4">Engenheiros</h2><div class="space-y-2">${engenheiros.map(u => `<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"><div><span class="font-medium">${u.full_name}</span></div><div><span class="text-sm text-gray-500">${u.email}</span><button onclick="deletarUsuario('${u.id}')" class="ml-4 text-red-500"><i class="fas fa-trash"></i></button></div></div>`).join('')}${engenheiros.length === 0 ? '<div class="text-gray-500 text-center py-4">Nenhum engenheiro cadastrado</div>' : ''}</div></div>
+                <div class="card p-6"><h2 class="text-xl font-semibold mb-4">Solicitantes</h2><div class="space-y-2">${solicitantes.map(u => `<div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg"><div><span class="font-medium">${u.full_name}</span></div><div><span class="text-sm text-gray-500">${u.email}</span><button onclick="deletarUsuario('${u.id}')" class="ml-4 text-red-500"><i class="fas fa-trash"></i></button></div></div>`).join('')}${solicitantes.length === 0 ? '<div class="text-gray-500 text-center py-4">Nenhum solicitante cadastrado</div>' : ''}</div></div>
             `;
         }
         
-        async function loadTeeCard(container) {
-            const usersResp = await fetch(`${API_BASE}/users?user_type=manutentor`);
-            const manutentores = await usersResp.json();
+        // ==================== TEE CARD ====================
+        async function loadTeeCard() {
+            document.getElementById('pageTitle').innerHTML = 'Tee Card';
+            document.getElementById('pageSubtitle').innerHTML = 'Desempenho diário dos manutentores';
+            const users = await apiFetch(`${API_BASE}/users`);
+            const manutentores = users.filter(u => u.user_type === 'manutentor');
             
-            container.innerHTML = `
-                <div class="card p-6">
-                    <h2 class="text-xl font-semibold mb-4">Cartão T - Desempenho Diário</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                        <button onclick="loadTeeCardView('daily')" class="btn-primary text-sm py-2">Visualização Diária</button>
-                        <button onclick="loadTeeCardView('weekly')" class="btn-outline text-sm py-2">Visualização Semanal</button>
-                        <button onclick="loadTeeCardView('monthly')" class="btn-outline text-sm py-2">Visualização Mensal</button>
-                        <button onclick="loadTeeCardView('yearly')" class="btn-outline text-sm py-2">Visualização Anual</button>
-                    </div>
-                    <div id="teeCardContent">
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <h3 class="font-semibold mb-3">Manutentores</h3>
-                            ${manutentores.map(m => `
-                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
-                                    <span>${m.full_name}</span>
-                                    <span class="text-gray-500">Nenhuma OS concluída hoje</span>
-                                </div>
-                            `).join('')}
-                            ${manutentores.length === 0 ? '<div class="text-gray-500">Nenhum manutentor cadastrado</div>' : ''}
-                        </div>
-                    </div>
-                </div>
+            document.getElementById('contentArea').innerHTML = `
+                <div class="card p-6"><div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"><button onclick="carregarTeeCard('daily')" class="btn-primary text-sm py-2">Visualização Diária</button><button onclick="carregarTeeCard('weekly')" class="btn-outline text-sm py-2">Visualização Semanal</button><button onclick="carregarTeeCard('monthly')" class="btn-outline text-sm py-2">Visualização Mensal</button><button onclick="carregarTeeCard('yearly')" class="btn-outline text-sm py-2">Visualização Anual</button></div>
+                <div id="teeCardContent"><div class="bg-gray-50 p-4 rounded-lg"><h3 class="font-semibold mb-3">Manutentores</h3>${manutentores.map(m => `<div class="flex justify-between items-center py-2 border-b border-gray-200"><span>${m.full_name}</span><span class="text-gray-500">Aguardando dados</span></div>`).join('')}${manutentores.length === 0 ? '<div class="text-gray-500">Nenhum manutentor cadastrado</div>' : ''}</div></div></div>
             `;
         }
         
-        // Funções auxiliares
-        async function openNewAsset() {
-            const code = prompt('Código do ativo:');
-            const name = prompt('Nome do ativo:');
-            if (code && name) {
-                await fetch(`${API_BASE}/assets`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code, name, asset_type: 'equipment' })
-                });
-                loadPage('ativos_lista');
-            }
+        window.carregarTeeCard = (view) => { document.getElementById('teeCardContent').innerHTML = `<div class="text-center py-8 text-gray-500">Visualização ${view === 'daily' ? 'Diária' : view === 'weekly' ? 'Semanal' : view === 'monthly' ? 'Mensal' : 'Anual'} em desenvolvimento</div>`; };
+        
+        // ==================== CALENDÁRIO MP ====================
+        async function loadCalendarioMP() {
+            document.getElementById('pageTitle').innerHTML = 'Calendário MP';
+            document.getElementById('pageSubtitle').innerHTML = 'Manutenção Planejada';
+            const orders = await apiFetch(`${API_BASE}/work-orders`);
+            const planejadas = orders.filter(o => o.order_type === 'planned' && !o.is_closed);
+            const hoje = new Date();
+            
+            document.getElementById('contentArea').innerHTML = `
+                <div class="card p-6"><div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"><div class="bg-green-50 p-4 rounded-lg"><h3 class="font-semibold text-green-700">✅ MP's Pendentes</h3><p class="text-2xl font-bold text-green-600">${planejadas.length}</p><p class="text-sm text-gray-500">Ordens agendadas</p></div><div class="bg-gray-50 p-4 rounded-lg"><h3 class="font-semibold text-gray-700">📅 Próximas MP's</h3><div class="mt-2 space-y-2">${planejadas.slice(0,5).map(o => `<div class="text-sm">• ${o.code} - ${o.title}</div>`).join('')}${planejadas.length === 0 ? '<div class="text-gray-500">Nenhuma MP pendente</div>' : ''}</div></div></div>
+                <button onclick="abrirNovaOS('planned')" class="btn-primary text-sm px-4 py-2">+ Criar Calendário de MP</button></div>
+            `;
         }
         
-        async function deleteAsset(id) {
-            if (confirm('Deseja excluir este ativo?')) {
-                await fetch(`${API_BASE}/assets/${id}`, { method: 'DELETE' });
-                loadPage('ativos_lista');
-            }
+        // ==================== FALHA DE EQUIPAMENTO ====================
+        async function loadFalhaEquipamento() {
+            document.getElementById('pageTitle').innerHTML = 'Falha de Equipamento';
+            document.getElementById('pageSubtitle').innerHTML = 'Registro de falhas e acompanhamento';
+            const orders = await apiFetch(`${API_BASE}/work-orders`);
+            const falhas = orders.filter(o => o.order_type === 'corrective');
+            const abertas = falhas.filter(o => !o.is_closed);
+            const fechadas = falhas.filter(o => o.is_closed);
+            const assets = await apiFetch(`${API_BASE}/assets`);
+            
+            document.getElementById('contentArea').innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div class="card p-6"><h2 class="text-xl font-semibold mb-4 flex items-center"><span class="badge-red px-2 py-1 rounded-full text-xs mr-2">⚠️</span> Equipamentos em Falha (${abertas.length})</h2><div class="space-y-3">${abertas.map(o => `<div class="bg-red-50 p-3 rounded-lg border-l-4 border-red-500"><div class="font-medium">${o.code} - ${o.title}</div><div class="text-sm text-gray-600 mt-1">Equipamento: ${assets.find(a => a.id === o.asset_id)?.name || '-'}</div><div class="text-xs text-gray-500 mt-1">Problema: ${o.reported_problem || 'Não informado'}</div><button onclick="abrirFecharOS('${o.id}')" class="mt-2 text-sm text-green-600">✓ Resolver Falha</button></div>`).join('')}${abertas.length === 0 ? '<div class="text-gray-500">Nenhuma falha em aberto</div>' : ''}</div></div>
+                <div class="card p-6"><h2 class="text-xl font-semibold mb-4">✅ Falhas Finalizadas (${fechadas.length})</h2><div class="space-y-3">${fechadas.slice(0,10).map(o => `<div class="bg-gray-50 p-3 rounded-lg"><div class="font-medium">${o.code} - ${o.title}</div><div class="text-sm text-gray-500 mt-1">Solução: ${o.solution_applied || 'Não informado'}</div></div>`).join('')}${fechadas.length === 0 ? '<div class="text-gray-500">Nenhuma falha finalizada</div>' : ''}</div></div></div>
+                <div class="mt-6"><button onclick="abrirNovaOS('corrective')" class="btn-primary text-sm px-4 py-2">+ Criar Falha de Equipamento</button></div>
+            `;
         }
         
-        async function openNewOrder(type) {
-            const code = prompt('Código da OS:');
-            const title = prompt('Título da OS:');
-            if (code && title && currentAssets[0]) {
-                await fetch(`${API_BASE}/work-orders`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ code, title, asset_id: currentAssets[0].id, order_type: type })
-                });
-                location.reload();
-            } else if (!currentAssets[0]) {
-                alert('Cadastre um ativo primeiro');
-            }
+        // ==================== INDICADORES ====================
+        async function loadIndicadores() {
+            document.getElementById('pageTitle').innerHTML = 'MTBF / MTTR';
+            document.getElementById('pageSubtitle').innerHTML = 'Indicadores de performance da manutenção';
+            const assets = await apiFetch(`${API_BASE}/assets`);
+            const totalHoras = assets.reduce((s, a) => s + (a.total_operating_hours || 0), 0);
+            const totalFalhas = assets.reduce((s, a) => s + (a.failure_count || 0), 0);
+            const mtbfGeral = totalFalhas > 0 ? (totalHoras / totalFalhas).toFixed(2) : 0;
+            
+            document.getElementById('contentArea').innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"><div class="card p-6 text-center"><h3 class="text-gray-500 mb-2">MTBF Geral</h3><p class="text-4xl font-bold text-blue-600">${mtbfGeral}</p><p class="text-sm text-gray-500">Horas entre falhas</p></div><div class="card p-6 text-center"><h3 class="text-gray-500 mb-2">MTTR Médio</h3><p class="text-4xl font-bold text-purple-600">-</p><p class="text-sm text-gray-500">Em desenvolvimento</p></div></div>
+                <div class="card p-6"><h2 class="text-xl font-semibold mb-4">Detalhamento por Ativo</h2><div class="overflow-x-auto"><table class="w-full"><thead><tr class="text-left text-gray-500 border-b"><th class="py-2">Ativo</th><th>Horas</th><th>Falhas</th><th>MTBF</th><th>Disponibilidade</th></tr></thead><tbody>${assets.map(a => `<tr class="border-b"><td class="py-2">${a.name}</td><td>${a.total_operating_hours || 0}</td><td>${a.failure_count || 0}</td><td>${a.failure_count > 0 ? ((a.total_operating_hours / a.failure_count).toFixed(2)) : '-'}h</td><td>-</td></tr>`).join('')}</tbody></table></div></div>
+            `;
         }
         
-        async function closeOrder(id) {
-            const hours = prompt('Horas trabalhadas:');
-            if (hours) {
-                await fetch(`${API_BASE}/work-orders/close/${id}?closure_report=Fechada&solution_applied=Concluída&actual_hours=${hours}`, { method: 'PUT' });
-                location.reload();
-            }
+        // ==================== RELATÓRIOS ====================
+        async function loadRelatorios() {
+            document.getElementById('pageTitle').innerHTML = 'Relatórios';
+            document.getElementById('pageSubtitle').innerHTML = 'Exportação de dados e relatórios gerenciais';
+            const orders = await apiFetch(`${API_BASE}/work-orders`);
+            const assets = await apiFetch(`${API_BASE}/assets`);
+            
+            document.getElementById('contentArea').innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="card p-6"><h2 class="text-xl font-semibold mb-4">Exportar Relatórios</h2><div class="space-y-3"><button onclick="alert('Exportação em desenvolvimento')" class="w-full btn-outline text-left px-4 py-2 rounded-lg">📊 Relatório de Ativos</button><button onclick="alert('Exportação em desenvolvimento')" class="w-full btn-outline text-left px-4 py-2 rounded-lg">📋 Relatório de Ordens de Serviço</button><button onclick="alert('Exportação em desenvolvimento')" class="w-full btn-outline text-left px-4 py-2 rounded-lg">👥 Relatório de Horas por Manutentor</button><button onclick="alert('Exportação em desenvolvimento')" class="w-full btn-outline text-left px-4 py-2 rounded-lg">📈 Relatório de MTBF/MTTR</button></div></div>
+                <div class="card p-6"><h2 class="text-xl font-semibold mb-4">Resumo Rápido</h2><div class="space-y-2"><div class="flex justify-between"><span>Total de Ativos:</span><span class="font-semibold">${assets.length}</span></div><div class="flex justify-between"><span>Total de OS:</span><span class="font-semibold">${orders.length}</span></div><div class="flex justify-between"><span>OS Finalizadas:</span><span class="font-semibold">${orders.filter(o => o.is_closed).length}</span></div></div></div></div>
+            `;
         }
         
-        async function openNewUser() {
-            const name = prompt('Nome completo:');
-            const email = prompt('E-mail:');
-            const type = prompt('Tipo (manutentor/engenheiro/solicitante):');
-            if (name && email) {
-                await fetch(`${API_BASE}/users`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, username: email.split('@')[0], full_name: name, password: '123456', user_type: type || 'solicitante' })
-                });
-                loadPage('rh');
-            }
+        // ==================== CRUD ====================
+        async function deletarAtivo(id) { if (confirm('Deseja excluir este ativo?')) { await fetch(`${API_BASE}/assets/${id}`, { method: 'DELETE' }); loadPage('ativos_lista'); } }
+        async function deletarUsuario(id) { if (confirm('Deseja excluir este usuário?')) { await fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' }); loadPage('rh_usuarios'); } }
+        
+        async function abrirNovaOS(tipo) {
+            const assets = await apiFetch(`${API_BASE}/assets`);
+            const selectHtml = assets.map(a => `<option value="${a.id}">${a.code} - ${a.name}</option>`).join('');
+            document.getElementById('osType').value = tipo;
+            document.getElementById('osAssetId').innerHTML = selectHtml;
+            document.getElementById('modalOSTitle').innerHTML = `Nova OS ${tipo === 'planned' ? 'Planejada (Verde)' : tipo === 'preventive' ? 'Preventiva (Azul)' : 'Corretiva (Vermelha)'}`;
+            abrirModal('modalNovaOS');
         }
         
-        async function deleteUser(id) {
-            if (confirm('Deseja excluir este usuário?')) {
-                await fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' });
-                loadPage('rh');
-            }
+        async function abrirFecharOS(id) {
+            document.getElementById('closeOSId').value = id;
+            abrirModal('modalFecharOS');
         }
         
-        window.loadTeeCardView = (view) => {
-            document.getElementById('teeCardContent').innerHTML = `<div class="text-center py-8 text-gray-500">Visualização ${view} em desenvolvimento</div>`;
-        };
+        // ==================== SUBMITS ====================
+        document.getElementById('formNovoAtivo')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await fetch(`${API_BASE}/assets`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: document.getElementById('assetCode').value, name: document.getElementById('assetName').value, asset_type: document.getElementById('assetType').value, location: document.getElementById('assetLocation').value }) });
+            fecharModal('modalNovoAtivo'); loadPage('ativos_lista');
+        });
         
-        // Carregar ativos na inicialização
-        fetch(`${API_BASE}/assets`).then(r => r.json()).then(assets => currentAssets = assets);
+        document.getElementById('formNovaOS')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const tipo = document.getElementById('osType').value;
+            await fetch(`${API_BASE}/work-orders`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: document.getElementById('osCode').value, title: document.getElementById('osTitle').value, asset_id: document.getElementById('osAssetId').value, description: document.getElementById('osDescription').value, priority: parseInt(document.getElementById('osPriority').value), order_type: tipo }) });
+            fecharModal('modalNovaOS'); location.reload();
+        });
         
-        // Iniciar
+        document.getElementById('formFecharOS')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('closeOSId').value;
+            await fetch(`${API_BASE}/work-orders/close/${id}?closure_report=Fechada&solution_applied=${encodeURIComponent(document.getElementById('closeSolution').value)}&actual_hours=${parseFloat(document.getElementById('closeHours').value)}`, { method: 'PUT' });
+            fecharModal('modalFecharOS'); location.reload();
+        });
+        
+        document.getElementById('formNovoUsuario')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await fetch(`${API_BASE}/users`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('userEmail').value, username: document.getElementById('userUsername').value, full_name: document.getElementById('userFullName').value, password: document.getElementById('userPassword').value, user_type: document.getElementById('userType').value }) });
+            fecharModal('modalNovoUsuario'); loadPage('rh_usuarios');
+        });
+        
+        // ==================== CARREGAR PÁGINA ====================
+        async function loadPage(page) {
+            currentPage = page;
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            if (event?.currentTarget) event.currentTarget.classList.add('active');
+            
+            const pages = { dashboard: loadDashboard, ativos_lista: loadAtivosLista, ativos_principais: loadAtivosPrincipais, ativos_sub: loadSubAtivos, ativos_posicoes: loadPosicoesAPU, os_planejadas: loadOSPlanejadas, os_preventivas: loadOSPreventivas, os_corretivas: loadOSCorretivas, rh_usuarios: loadRHUsuarios, tee_card: loadTeeCard, calendario_mp: loadCalendarioMP, falha_equipamento: loadFalhaEquipamento, indicadores: loadIndicadores, relatorios: loadRelatorios };
+            if (pages[page]) await pages[page](); else await loadDashboard();
+        }
+        
+        window.loadPage = loadPage;
+        window.abrirModal = abrirModal;
+        window.fecharModal = fecharModal;
+        window.deletarAtivo = deletarAtivo;
+        window.deletarUsuario = deletarUsuario;
+        window.abrirNovaOS = abrirNovaOS;
+        window.abrirFecharOS = abrirFecharOS;
+        window.carregarTeeCard = window.carregarTeeCard;
+        window.mostrarAbaOS = window.mostrarAbaOS;
+        
         loadPage('dashboard');
     </script>
 </body>
