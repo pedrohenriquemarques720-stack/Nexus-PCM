@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus PCM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #FFFFFF; }
+        .gradient-text { background: linear-gradient(135deg, #2563EB, #8B5CF6, #EC4899); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .card { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 20px; transition: all 0.3s; }
+        .card:hover { transform: translateY(-4px); border-color: #2563EB; }
+        .btn-primary { background: linear-gradient(135deg, #2563EB, #8B5CF6); color: white; padding: 10px 24px; border-radius: 12px; }
+        .nav-item { transition: all 0.3s; cursor: pointer; }
+        .nav-item:hover { background: #F1F5F9; }
+        .nav-item.active { background: linear-gradient(135deg, rgba(37,99,235,0.1), rgba(139,91,246,0.1)); color: #2563EB; border-left: 3px solid #2563EB; }
+    </style>
+</head>
+<body>
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-80 bg-[#F8FAFC] border-r border-[#E2E8F0] p-6 overflow-y-auto">
+            <div class="flex items-center gap-3 mb-8">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#8B5CF6] flex items-center justify-center">
+                    <i class="fas fa-chart-line text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-2xl gradient-text">NEXUS</h1>
+                    <p class="text-xs text-gray-500">PCM - Manutenção</p>
+                </div>
+            </div>
+            
+            <nav class="space-y-1">
+                <div class="text-xs text-gray-400 uppercase tracking-wider mb-2 px-3">Menu Principal</div>
+                <div onclick="loadPage('dashboard')" class="nav-item active flex items-center gap-3 px-4 py-3 rounded-xl">
+                    <i class="fas fa-tachometer-alt w-5"></i> Dashboard
+                </div>
+                
+                <div class="text-xs text-gray-400 uppercase tracking-wider mt-4 mb-2 px-3">Ativos</div>
+                <div onclick="loadPage('ativos_lista')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
+                    <i class="fas fa-microchip w-5"></i> Lista Completa de Ativos
+                </div>
+                <div onclick="loadPage('ativos_principais')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl pl-8">
+                    <i class="fas fa-database w-5"></i> Ativos Principais
+                </div>
+                <div onclick="loadPage('ativos_sub')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl pl-8">
+                    <i class="fas fa-code-branch w-5"></i> Sub-Ativos
+                </div>
+                <div onclick="loadPage('ativos_posicoes')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl pl-8">
+                    <i class="fas fa-map-marker-alt w-5"></i> Posições (APU)
+                </div>
+                
+                <div class="text-xs text-gray-400 uppercase tracking-wider mt-4 mb-2 px-3">Ordens de Serviço</div>
+                <div onclick="loadPage('os_planejadas')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
+                    <i class="fas fa-calendar-check text-green-600 w-5"></i> Planejadas (Verde)
+                </div>
+                <div onclick="loadPage('os_preventivas')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
+                    <i class="fas fa-shield-alt text-blue-600 w-5"></i> Preventivas (Azul)
+                </div>
+                <div onclick="loadPage('os_corretivas')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
+                    <i class="fas fa-exclamation-triangle text-red-600 w-5"></i> Corretivas (Vermelha)
+                </div>
+                
+                <div class="text-xs text-gray-400 uppercase tracking-wider mt-4 mb-2 px-3">Recursos</div>
+                <div onclick="loadPage('rh')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
+                    <i class="fas fa-users w-5"></i> RH / Usuários
+                </div>
+                <div onclick="loadPage('tee_card')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
+                    <i class="fas fa-id-card w-5"></i> Tee Card
+                </div>
+                <div onclick="loadPage('calendario_mp')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
+                    <i class="fas fa-calendar-alt w-5"></i> Calendário MP
+                </div>
+                <div onclick="loadPage('falhas')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
+                    <i class="fas fa-bug w-5"></i> Falha de Equipamento
+                </div>
+                
+                <div class="text-xs text-gray-400 uppercase tracking-wider mt-4 mb-2 px-3">Análise de Dados</div>
+                <div onclick="loadPage('indicadores')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
+                    <i class="fas fa-chart-line w-5"></i> MTBF / MTTR
+                </div>
+                <div onclick="loadPage('relatorios')" class="nav-item flex items-center gap-3 px-4 py-3 rounded-xl">
+                    <i class="fas fa-file-alt w-5"></i> Relatórios
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <header class="sticky top-0 bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-4">
+                <h1 class="text-2xl font-bold gradient-text" id="pageTitle">Dashboard</h1>
+                <p class="text-sm text-gray-500" id="pageSubtitle">Visão geral do sistema</p>
+            </header>
+            
+            <div id="contentArea" class="p-8">
+                <div class="text-center py-20 text-gray-500">Carregando...</div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin + '/api/v1';
+        
+        let currentAssets = [];
+        let currentOrders = { abertas: [], fechadas: [] };
+        
+        async function loadPage(page) {
+            const title = document.getElementById('pageTitle');
+            const content = document.getElementById('contentArea');
+            
+            // Ativar item do menu
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
+            
+            if (page === 'dashboard') {
+                title.innerText = 'Dashboard';
+                title.classList.add('gradient-text');
+                content.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="card p-6 text-center"><div class="text-3xl font-bold text-blue-600" id="totalAssets">0</div><div class="text-gray-500">Ativos</div></div>
+                        <div class="card p-6 text-center"><div class="text-3xl font-bold text-purple-600" id="totalOrders">0</div><div class="text-gray-500">OS Abertas</div></div>
+                        <div class="card p-6 text-center"><div class="text-3xl font-bold text-pink-600" id="avgMtbf">0</div><div class="text-gray-500">MTBF (h)</div></div>
+                        <div class="card p-6 text-center"><div class="text-3xl font-bold text-green-600" id="availability">0</div><div class="text-gray-500">Disponibilidade</div></div>
+                    </div>
+                    <div class="card p-6">
+                        <h2 class="text-xl font-semibold mb-4">Últimos Ativos</h2>
+                        <div id="recentAssetsList"></div>
+                    </div>
+                `;
+                
+                // Carregar dados
+                const assetsResp = await fetch(`${API_BASE}/assets`);
+                const assets = await assetsResp.json();
+                currentAssets = assets;
+                document.getElementById('totalAssets').innerText = assets.length;
+                
+                const ordersResp = await fetch(`${API_BASE}/work-orders`);
+                const orders = await ordersResp.json();
+                const abertas = orders.filter(o => !o.is_closed);
+                document.getElementById('totalOrders').innerText = abertas.length;
+                
+                const recentHtml = assets.slice(0,5).map(a => `
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                        <span class="text-blue-600">${a.code}</span>
+                        <span>${a.name}</span>
+                        <span class="text-gray-500">${a.location || '-'}</span>
+                    </div>
+                `).join('');
+                document.getElementById('recentAssetsList').innerHTML = recentHtml || '<div class="text-gray-500">Nenhum ativo cadastrado</div>';
+            }
+            
+            else if (page === 'ativos_lista') {
+                title.innerText = 'Lista Completa de Ativos';
+                await loadAssetsList(content);
+            }
+            else if (page === 'ativos_principais') {
+                title.innerText = 'Ativos Principais';
+                await loadAssetsList(content);
+            }
+            else if (page === 'ativos_sub') {
+                title.innerText = 'Sub-Ativos';
+                content.innerHTML = '<div class="card p-6 text-center text-gray-500">Funcionalidade em desenvolvimento</div>';
+            }
+            else if (page === 'ativos_posicoes') {
+                title.innerText = 'Posições (APU)';
+                await loadPositions(content);
+            }
+            
+            else if (page === 'os_planejadas') {
+                title.innerText = 'Ordens Planejadas (Verde)';
+                await loadOrdersByType('planned', content, 'verde');
+            }
+            else if (page === 'os_preventivas') {
+                title.innerText = 'Ordens Preventivas (Azul)';
+                await loadOrdersByType('preventive', content, 'azul');
+            }
+            else if (page === 'os_corretivas') {
+                title.innerText = 'Ordens Corretivas (Vermelha)';
+                await loadOrdersByType('corrective', content, 'vermelha');
+            }
+            
+            else if (page === 'rh') {
+                title.innerText = 'RH / Usuários';
+                await loadUsers(content);
+            }
+            else if (page === 'tee_card') {
+                title.innerText = 'Tee Card';
+                await loadTeeCard(content);
+            }
+            else if (page === 'calendario_mp') {
+                title.innerText = 'Calendário MP';
+                content.innerHTML = '<div class="card p-6 text-center text-gray-500">Em desenvolvimento</div>';
+            }
+            else if (page === 'falhas') {
+                title.innerText = 'Falha de Equipamento';
+                content.innerHTML = '<div class="card p-6 text-center text-gray-500">Em desenvolvimento</div>';
+            }
+            else if (page === 'indicadores') {
+                title.innerText = 'MTBF / MTTR';
+                content.innerHTML = '<div class="card p-6 text-center text-gray-500">Em desenvolvimento</div>';
+            }
+            else if (page === 'relatorios') {
+                title.innerText = 'Relatórios';
+                content.innerHTML = '<div class="card p-6 text-center text-gray-500">Em desenvolvimento</div>';
+            }
+        }
+        
+        async function loadAssetsList(container) {
+            const response = await fetch(`${API_BASE}/assets`);
+            const assets = await response.json();
+            currentAssets = assets;
+            
+            container.innerHTML = `
+                <div class="card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold">Ativos Cadastrados</h2>
+                        <button onclick="openNewAsset()" class="btn-primary text-sm px-4 py-2">+ Novo Ativo</button>
+                    </div>
+                    <table class="w-full">
+                        <thead><tr class="text-left text-gray-500 border-b"><th class="py-2">Código</th><th>Nome</th><th>Tipo</th><th>Localização</th><th>Status</th><th>Ações</th></tr></thead>
+                        <tbody>${assets.map(a => `<tr><td class="text-blue-600 py-2">${a.code}</td><td>${a.name}</td><td>${a.asset_type}</td><td>${a.location || '-'}</td><td><span class="px-2 py-1 rounded-full text-xs ${a.status === 'active' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500'}">${a.status === 'active' ? 'Ativo' : 'Inativo'}</span></td><td><button onclick="deleteAsset('${a.id}')" class="text-red-500"><i class="fas fa-trash"></i></button></td></tr>`).join('')}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
+        async function loadPositions(container) {
+            const response = await fetch(`${API_BASE}/assets`);
+            const assets = await response.json();
+            const positions = [...new Set(assets.map(a => a.location).filter(l => l))];
+            
+            container.innerHTML = `
+                <div class="card p-6">
+                    <h2 class="text-xl font-semibold mb-4">Posições / APU</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        ${positions.map(p => `<div class="bg-gray-50 p-3 rounded-lg border border-gray-200">📍 ${p}</div>`).join('')}
+                        ${positions.length === 0 ? '<div class="text-gray-500">Nenhuma posição cadastrada</div>' : ''}
+                    </div>
+                    <div class="mt-6">
+                        <h3 class="font-semibold mb-2">APU Pump</h3>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <div class="text-sm text-gray-600">Cabecote</div>
+                            <div class="text-sm text-gray-600">Montagem de bombas</div>
+                            <div class="text-sm text-gray-600">Teste de bombas</div>
+                            <div class="text-sm text-gray-600">Acabamento de Bombas</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function loadOrdersByType(type, container, color) {
+            const response = await fetch(`${API_BASE}/work-orders?order_type=${type}`);
+            const orders = await response.json();
+            
+            const abertas = orders.filter(o => !o.is_closed);
+            const fechadas = orders.filter(o => o.is_closed);
+            
+            container.innerHTML = `
+                <div class="card p-6">
+                    <div class="flex gap-4 border-b border-gray-200 mb-4">
+                        <button onclick="window.showOrdersTab('abertas')" id="tabAbertas" class="px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600">Abertas (${abertas.length})</button>
+                        <button onclick="window.showOrdersTab('fechadas')" id="tabFechadas" class="px-4 py-2 text-gray-500">Fechadas (${fechadas.length})</button>
+                    </div>
+                    <div id="ordersTabContent" class="mt-4"></div>
+                    <div class="mt-6 pt-4 border-t border-gray-200">
+                        <button onclick="openNewOrder('${type}')" class="btn-primary text-sm px-4 py-2">+ Nova OS</button>
+                    </div>
+                </div>
+            `;
+            
+            window.currentOrdersData = { abertas, fechadas };
+            window.showOrdersTab = (tab) => {
+                const orders = tab === 'abertas' ? abertas : fechadas;
+                const contentDiv = document.getElementById('ordersTabContent');
+                document.getElementById('tabAbertas').className = tab === 'abertas' ? 'px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600' : 'px-4 py-2 text-gray-500';
+                document.getElementById('tabFechadas').className = tab === 'fechadas' ? 'px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600' : 'px-4 py-2 text-gray-500';
+                
+                if (orders.length === 0) {
+                    contentDiv.innerHTML = '<div class="text-center py-8 text-gray-500">Nenhuma ordem encontrada</div>';
+                    return;
+                }
+                
+                contentDiv.innerHTML = `
+                    <table class="w-full">
+                        <thead><tr class="text-left text-gray-500 border-b"><th class="py-2">Código</th><th>Título</th><th>Ativo</th><th>Data</th><th>Ações</th></tr></thead>
+                        <tbody>${orders.map(o => `<tr><td class="text-blue-600 py-2">${o.code}</td><td>${o.title}</td><td>-</td><td>${new Date(o.created_at).toLocaleDateString()}</td><td>${!o.is_closed ? `<button onclick="closeOrder('${o.id}')" class="text-green-600">Fechar</button>` : '<span class="text-gray-400">Concluída</span>'}</td></tr>`).join('')}</tbody>
+                    </table>
+                `;
+            };
+            window.showOrdersTab('abertas');
+        }
+        
+        async function loadUsers(container) {
+            const response = await fetch(`${API_BASE}/users`);
+            const users = await response.json();
+            
+            container.innerHTML = `
+                <div class="card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold">Usuários</h2>
+                        <button onclick="openNewUser()" class="btn-primary text-sm px-4 py-2">+ Novo Usuário</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead><tr class="text-left text-gray-500 border-b"><th class="py-2">Nome</th><th>E-mail</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead>
+                            <tbody>${users.map(u => `<tr><td class="py-2">${u.full_name}</tr><td>${u.email}</td><td><span class="px-2 py-1 rounded-full text-xs ${u.user_type === 'manutentor' ? 'bg-blue-100 text-blue-600' : u.user_type === 'engenheiro' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-600'}">${u.user_type}</span></td><td><span class="px-2 py-1 rounded-full text-xs ${u.is_active ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">${u.is_active ? 'Ativo' : 'Inativo'}</span></td><td><button onclick="deleteUser('${u.id}')" class="text-red-500"><i class="fas fa-trash"></i></button></td></tr>`).join('')}</tbody>
+                        <tr>
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function loadTeeCard(container) {
+            const usersResp = await fetch(`${API_BASE}/users?user_type=manutentor`);
+            const manutentores = await usersResp.json();
+            
+            container.innerHTML = `
+                <div class="card p-6">
+                    <h2 class="text-xl font-semibold mb-4">Cartão T - Desempenho Diário</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                        <button onclick="loadTeeCardView('daily')" class="btn-primary text-sm py-2">Visualização Diária</button>
+                        <button onclick="loadTeeCardView('weekly')" class="btn-outline text-sm py-2">Visualização Semanal</button>
+                        <button onclick="loadTeeCardView('monthly')" class="btn-outline text-sm py-2">Visualização Mensal</button>
+                        <button onclick="loadTeeCardView('yearly')" class="btn-outline text-sm py-2">Visualização Anual</button>
+                    </div>
+                    <div id="teeCardContent">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h3 class="font-semibold mb-3">Manutentores</h3>
+                            ${manutentores.map(m => `
+                                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                                    <span>${m.full_name}</span>
+                                    <span class="text-gray-500">Nenhuma OS concluída hoje</span>
+                                </div>
+                            `).join('')}
+                            ${manutentores.length === 0 ? '<div class="text-gray-500">Nenhum manutentor cadastrado</div>' : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Funções auxiliares
+        async function openNewAsset() {
+            const code = prompt('Código do ativo:');
+            const name = prompt('Nome do ativo:');
+            if (code && name) {
+                await fetch(`${API_BASE}/assets`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, name, asset_type: 'equipment' })
+                });
+                loadPage('ativos_lista');
+            }
+        }
+        
+        async function deleteAsset(id) {
+            if (confirm('Deseja excluir este ativo?')) {
+                await fetch(`${API_BASE}/assets/${id}`, { method: 'DELETE' });
+                loadPage('ativos_lista');
+            }
+        }
+        
+        async function openNewOrder(type) {
+            const code = prompt('Código da OS:');
+            const title = prompt('Título da OS:');
+            if (code && title && currentAssets[0]) {
+                await fetch(`${API_BASE}/work-orders`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, title, asset_id: currentAssets[0].id, order_type: type })
+                });
+                location.reload();
+            } else if (!currentAssets[0]) {
+                alert('Cadastre um ativo primeiro');
+            }
+        }
+        
+        async function closeOrder(id) {
+            const hours = prompt('Horas trabalhadas:');
+            if (hours) {
+                await fetch(`${API_BASE}/work-orders/close/${id}?closure_report=Fechada&solution_applied=Concluída&actual_hours=${hours}`, { method: 'PUT' });
+                location.reload();
+            }
+        }
+        
+        async function openNewUser() {
+            const name = prompt('Nome completo:');
+            const email = prompt('E-mail:');
+            const type = prompt('Tipo (manutentor/engenheiro/solicitante):');
+            if (name && email) {
+                await fetch(`${API_BASE}/users`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, username: email.split('@')[0], full_name: name, password: '123456', user_type: type || 'solicitante' })
+                });
+                loadPage('rh');
+            }
+        }
+        
+        async function deleteUser(id) {
+            if (confirm('Deseja excluir este usuário?')) {
+                await fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' });
+                loadPage('rh');
+            }
+        }
+        
+        window.loadTeeCardView = (view) => {
+            document.getElementById('teeCardContent').innerHTML = `<div class="text-center py-8 text-gray-500">Visualização ${view} em desenvolvimento</div>`;
+        };
+        
+        // Carregar ativos na inicialização
+        fetch(`${API_BASE}/assets`).then(r => r.json()).then(assets => currentAssets = assets);
+        
+        // Iniciar
+        loadPage('dashboard');
+    </script>
+</body>
+</html>
