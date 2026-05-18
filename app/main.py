@@ -1,213 +1,545 @@
 import streamlit as st
 import pandas as pd
-import random
+import requests
 from datetime import datetime
+import json
 
 # =============================================================================
-# 1. CONFIGURAÇÃO INICIAL E SESSION STATE (PERSISTÊNCIA)
+# CONFIGURAÇÃO DA PÁGINA
 # =============================================================================
-
-def inicializar_estado():
-    """Inicializa todas as chaves do session_state se não existirem.
-       Isso garante que os dados não sumam entre reruns."""
-    
-    # Dados principais (simulam o banco de dados)
-    if "dados_ativos" not in st.session_state:
-        # Fallback seguro: dados iniciais vazios ou exemplo
-        st.session_state.dados_ativos = []
-        # Exemplo opcional para teste visual:
-        # st.session_state.dados_ativos = [
-        #     {"id": 1, "codigo": "MAQ-001", "nome": "Prensa", "status": "Ativo"},
-        #     {"id": 2, "codigo": "EST-002", "nome": "Esteira", "status": "Ativo"},
-        # ]
-
-    if "dados_os" not in st.session_state:
-        st.session_state.dados_os = []
-
-    if "mensagem_erro" not in st.session_state:
-        st.session_state.mensagem_erro = None
+st.set_page_config(
+    page_title="Nexus PCM - Manutenção Industrial",
+    page_icon="🔧",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 # =============================================================================
-# 2. FUNÇÕES SIMULADAS DE BACKEND (COM TRATAMENTO DE EXCEÇÕES)
+# INICIALIZAÇÃO DO SESSION STATE (PERSISTÊNCIA)
 # =============================================================================
+def init_session_state():
+    """Inicializa todas as variáveis de estado"""
+    if 'ativos' not in st.session_state:
+        st.session_state.ativos = []
+    if 'ordens' not in st.session_state:
+        st.session_state.ordens = []
+    if 'usuarios' not in st.session_state:
+        st.session_state.usuarios = []
+    if 'pagina_atual' not in st.session_state:
+        st.session_state.pagina_atual = "Dashboard"
 
-def carregar_ativos():
-    """Simula consulta ao banco - retorna lista de ativos (com fallback seguro)."""
+init_session_state()
+
+# =============================================================================
+# FUNÇÕES AUXILIARES (COM TRATAMENTO DE ERRO)
+# =============================================================================
+def try_request(url, method='GET', data=None):
+    """Função segura para requisições - não quebra o layout"""
     try:
-        # Aqui entraria sua lógica real de BD: SELECT * FROM ativos
-        # Exemplo com dados locais (troque pela sua consulta real)
-        # Por enquanto, retorna o que está no session_state
-        return st.session_state.dados_ativos
+        if method == 'GET':
+            response = requests.get(url, timeout=5)
+        elif method == 'POST':
+            response = requests.post(url, json=data, timeout=5)
+        elif method == 'DELETE':
+            response = requests.delete(url, timeout=5)
+        else:
+            return None
+        
+        if response.status_code == 200:
+            return response.json()
+        return None
     except Exception as e:
-        st.session_state.mensagem_erro = f"Erro ao carregar ativos: {str(e)}"
-        return []  # Fallback: lista vazia evita quebra do layout
-
-def salvar_ativo(novo_ativo):
-    """Simula INSERT no banco e atualiza session_state."""
-    try:
-        # Validação básica
-        if not novo_ativo.get("codigo") or not novo_ativo.get("nome"):
-            raise ValueError("Código e nome são obrigatórios")
-        
-        # Geração de ID fictício (substitua pelo serial do BD)
-        novo_id = random.randint(1000, 9999)
-        novo_ativo["id"] = novo_id
-        novo_ativo["data_criacao"] = datetime.now()
-        
-        # Adiciona ao estado (simula commit)
-        st.session_state.dados_ativos.append(novo_ativo)
-        
-        # Aqui você chamaria seu banco real: INSERT INTO ativos...
-        # Exemplo: db.insert("ativos", novo_ativo)
-        
-        return True, "Ativo salvo com sucesso!"
-    except Exception as e:
-        st.session_state.mensagem_erro = f"Erro ao salvar ativo: {str(e)}"
-        return False, str(e)
+        st.error(f"Erro de conexão: {str(e)}")
+        return None
 
 # =============================================================================
-# 3. FUNÇÃO QUE CONSTRÓI O HTML DINAMICAMENTE A PARTIR DO ESTADO
+# CSS PERSONALIZADO (MESMO ESTILO DO SEU HTML)
 # =============================================================================
+st.markdown("""
+<style>
+    /* Cores da marca */
+    :root {
+        --primary-blue: #2563EB;
+        --secondary-blue: #60A5FA;
+        --purple: #8B5CF6;
+        --pink: #EC4899;
+    }
+    
+    /* Cards */
+    .stCard {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 20px;
+        padding: 1.5rem;
+        transition: all 0.3s;
+    }
+    .stCard:hover {
+        transform: translateY(-4px);
+        border-color: var(--primary-blue);
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+    }
+    
+    /* Badges */
+    .badge-green { background: #ECFDF5; color: #059669; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+    .badge-blue { background: #EFF6FF; color: var(--primary-blue); padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+    .badge-red { background: #FEF2F2; color: #DC2626; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+    .badge-yellow { background: #FEF3C7; color: #D97706; padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+    .badge-purple { background: #F3E8FF; color: var(--purple); padding: 4px 12px; border-radius: 20px; font-size: 12px; }
+    
+    /* Botões */
+    .stButton > button {
+        background: linear-gradient(135deg, var(--primary-blue), var(--purple));
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 8px 20px;
+        transition: all 0.3s;
+    }
+    .stButton > button:hover {
+        transform: scale(1.02);
+        box-shadow: 0 10px 20px -5px rgba(37,99,235,0.3);
+    }
+    
+    /* Títulos */
+    .gradient-text {
+        background: linear-gradient(135deg, var(--secondary-blue), var(--purple), var(--pink));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+    
+    /* Tabelas */
+    .stDataFrame {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background: #F8FAFC;
+        border-right: 1px solid #E2E8F0;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-def gerar_html_tabs():
-    """Monta o HTML inteiro usando os dados atuais do session_state.
-       Essa função é chamada a cada rerun, mas não perde dados porque
-       os dados estão salvos no estado."""
-    
-    # Carrega os dados mais recentes (do estado, ou do BD se quiser)
-    ativos = carregar_ativos()
-    
-    # Gerar linhas da tabela de ativos dinamicamente (Loop Python → HTML)
-    linhas_html = ""
-    if ativos:
-        for ativo in ativos:
-            linhas_html += f"""
-            <tr>
-                <td>{ativo.get('codigo', '-')}</td>
-                <td>{ativo.get('nome', '-')}</td>
-                <td>{ativo.get('status', 'Ativo')}</td>
-                <td><button class='btn-detalhe' onclick='alert("Em desenvolvimento")'>Detalhes</button></td>
-            </tr>
-            """
-    else:
-        linhas_html = "<tr><td colspan='3' style='text-align:center'>Nenhum ativo cadastrado</td></tr>"
-    
-    # HTML completo (com as mesmas classes/estilos que você já tem)
-    html_completo = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <style>
-            body {{ font-family: 'Inter', sans-serif; background: #FFFFFF; }}
-            .card {{ background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 20px; padding: 1.5rem; }}
-            .btn-primary {{ background: linear-gradient(135deg, #2563EB, #8B5CF6); color: white; padding: 8px 20px; border-radius: 12px; border: none; cursor: pointer; }}
-            table {{ width: 100%; border-collapse: collapse; }}
-            th, td {{ padding: 12px; text-align: left; border-bottom: 1px solid #E2E8F0; }}
-            th {{ color: #64748B; font-weight: 500; }}
-            .tabs-container {{ margin-bottom: 20px; }}
-            .tab-btn {{ padding: 10px 20px; background: #F1F5F9; border: none; cursor: pointer; margin-right: 5px; border-radius: 10px; }}
-            .tab-btn.active {{ background: #2563EB; color: white; }}
-            .tab-content {{ display: none; }}
-            .tab-content.active {{ display: block; }}
-            .toast {{ position: fixed; bottom: 20px; right: 20px; background: #1E293B; color: white; padding: 12px 20px; border-radius: 8px; z-index: 1000; }}
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <h2 style="font-size:1.5rem; margin-bottom:1rem;">📋 Ativos Cadastrados</h2>
-            <table>
-                <thead>
-                    <tr><th>Código</th><th>Nome</th><th>Status</th><th>Ações</th></tr>
-                </thead>
-                <tbody>
-                    {linhas_html}
-                </tbody>
-            </table>
-            <div style="margin-top: 1rem;">
-                <button onclick="parent.postMessage({{type: 'abrirModal'}}, '*')" class="btn-primary">+ Novo Ativo</button>
-            </div>
+# =============================================================================
+# SIDEBAR - MENU PRINCIPAL
+# =============================================================================
+with st.sidebar:
+    st.markdown("""
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 32px;">
+        <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #2563EB, #8B5CF6); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 20px;">🔧</span>
         </div>
-
-        <script>
-            // Exemplo de comunicação com Streamlit via JavaScript
-            window.addEventListener('message', (event) => {{
-                if (event.data.type === 'abrirModal') {{
-                    // Aqui você poderia chamar Streamlit.setComponentValue
-                    console.log('Abrir modal solicitado pelo HTML');
-                }}
-            }});
-        </script>
-    </body>
-    </html>
-    """
-    return html_completo
+        <div>
+            <h1 style="font-size: 24px; font-weight: bold; margin: 0;">NEXUS</h1>
+            <p style="font-size: 10px; color: #60A5FA; margin: 0;">PCM - Manutenção</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # Menu com ícones
+    menu_options = {
+        "Dashboard": "📊",
+        "Ativos": "🏭",
+        "Ordens Planejadas (Verde)": "📅",
+        "Ordens Preventivas (Azul)": "🛡️",
+        "Ordens Corretivas (Vermelha)": "⚠️",
+        "RH / Usuários": "👥",
+        "Tee Card": "🃏",
+        "Calendário MP": "📆",
+        "Falha de Equipamento": "🐛",
+        "Indicadores (MTBF/MTTR)": "📈",
+        "Relatórios": "📄"
+    }
+    
+    for option, icon in menu_options.items():
+        if st.button(f"{icon} {option}", key=option, use_container_width=True):
+            st.session_state.pagina_atual = option
+            st.rerun()
+    
+    st.markdown("---")
+    st.caption("© 2024 Nexus PCM - R$ 397/mês")
 
 # =============================================================================
-# 4. FUNÇÃO DE RENDERIZAÇÃO DO COMPONENTE (SUBSTITUI O HTML ESTÁTICO)
+# DASHBOARD PRINCIPAL
 # =============================================================================
-
-def renderizar_html():
-    """Renderiza o componente HTML com os dados mais recentes do estado."""
-    html = gerar_html_tabs()
-    st.components.v1.html(html, height=400, scrolling=True)
+def dashboard():
+    st.markdown('<h1 class="gradient-text">Dashboard</h1>', unsafe_allow_html=True)
+    st.markdown("Visão geral do sistema de manutenção")
+    
+    # Buscar dados reais
+    ativos = st.session_state.ativos
+    ordens = st.session_state.ordens
+    
+    # Cards de métricas
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="stCard" style="text-align: center;">
+            <div style="font-size: 32px; font-weight: bold; color: #2563EB;">{len(ativos)}</div>
+            <div style="color: #64748B;">Ativos</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        abertas = len([o for o in ordens if not o.get('is_closed', False)])
+        st.markdown(f"""
+        <div class="stCard" style="text-align: center;">
+            <div style="font-size: 32px; font-weight: bold; color: #D97706;">{abertas}</div>
+            <div style="color: #64748B;">OS Abertas</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        fechadas = len([o for o in ordens if o.get('is_closed', False)])
+        st.markdown(f"""
+        <div class="stCard" style="text-align: center;">
+            <div style="font-size: 32px; font-weight: bold; color: #059669;">{fechadas}</div>
+            <div style="color: #64748B;">OS Fechadas</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="stCard" style="text-align: center;">
+            <div style="font-size: 32px; font-weight: bold; color: #7C3AED;">{len(st.session_state.usuarios)}</div>
+            <div style="color: #64748B;">Usuários</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Últimos ativos
+    st.markdown("---")
+    st.subheader("📋 Últimos Ativos")
+    
+    if ativos:
+        df = pd.DataFrame(ativos[-5:])
+        df = df[['codigo', 'nome', 'tipo', 'localizacao']] if 'codigo' in df.columns else df
+        st.dataframe(df, use_container_width=True)
+    else:
+        st.info("Nenhum ativo cadastrado ainda. Use o menu 'Ativos' para começar.")
 
 # =============================================================================
-# 5. FUNÇÃO PARA TRATAR O FORMULÁRIO DE CADASTRO (COM st.form)
+# ATIVOS (CRUD COMPLETO)
 # =============================================================================
-
-def formulario_novo_ativo():
-    """Exibe formulário Streamlit para adicionar novo ativo.
-       Este formulário fica fora do HTML, pois o Streamlit gerencia o estado melhor assim."""
-    with st.form("form_novo_ativo"):
+def ativos_page():
+    st.markdown('<h1 class="gradient-text">Ativos</h1>', unsafe_allow_html=True)
+    st.markdown("Gestão de ativos industriais")
+    
+    # Formulário de cadastro
+    with st.expander("➕ Novo Ativo", expanded=False):
         col1, col2 = st.columns(2)
         with col1:
-            codigo = st.text_input("Código do Ativo *", placeholder="Ex: MAQ-001")
+            codigo = st.text_input("Código", placeholder="Ex: MAQ-001")
+            nome = st.text_input("Nome", placeholder="Ex: Prensa Hidráulica")
         with col2:
-            nome = st.text_input("Nome do Ativo *", placeholder="Ex: Prensa Hidráulica")
+            tipo = st.selectbox("Tipo", ["equipment", "machine", "vehicle"])
+            localizacao = st.text_input("Localização (APU)", placeholder="Ex: APU Pump - Cabecote")
         
-        status = st.selectbox("Status", ["Ativo", "Em Manutenção", "Inativo"])
-        submitted = st.form_submit_button("💾 Salvar Ativo", use_container_width=True)
-        
-        if submitted:
-            if not codigo or not nome:
-                st.error("Preencha código e nome do ativo")
-                return
-            
-            novo = {"codigo": codigo, "nome": nome, "status": status}
-            sucesso, msg = salvar_ativo(novo)
-            if sucesso:
-                st.success(msg)
-                st.rerun()  # Força o rerun para atualizar o HTML
+        if st.button("💾 Salvar Ativo", use_container_width=True):
+            if codigo and nome:
+                novo = {
+                    "id": len(st.session_state.ativos) + 1,
+                    "codigo": codigo,
+                    "nome": nome,
+                    "tipo": tipo,
+                    "localizacao": localizacao,
+                    "status": "Ativo",
+                    "horas_operacao": 0,
+                    "falhas": 0,
+                    "criado_em": datetime.now().strftime("%Y-%m-%d %H:%M")
+                }
+                st.session_state.ativos.append(novo)
+                st.success(f"Ativo {codigo} criado com sucesso!")
+                st.rerun()
             else:
-                st.error(msg)
+                st.error("Preencha código e nome")
+    
+    # Lista de ativos
+    st.markdown("---")
+    st.subheader("📋 Lista de Ativos")
+    
+    if st.session_state.ativos:
+        df = pd.DataFrame(st.session_state.ativos)
+        
+        # Configurar colunas para exibição
+        colunas = ['codigo', 'nome', 'tipo', 'localizacao', 'status', 'horas_operacao', 'falhas']
+        df_display = df[[c for c in colunas if c in df.columns]]
+        
+        # Botões de ação
+        st.dataframe(df_display, use_container_width=True)
+        
+        # Botão de exclusão
+        with st.expander("🗑️ Excluir Ativo"):
+            codigo_excluir = st.selectbox("Selecione o código do ativo", [a['codigo'] for a in st.session_state.ativos])
+            if st.button("Excluir", use_container_width=True):
+                st.session_state.ativos = [a for a in st.session_state.ativos if a['codigo'] != codigo_excluir]
+                st.success(f"Ativo {codigo_excluir} excluído")
+                st.rerun()
+    else:
+        st.info("Nenhum ativo cadastrado")
 
 # =============================================================================
-# 6. FUNÇÃO PRINCIPAL (LAYOUT DO STREAMLIT)
+# ORDENS DE SERVIÇO (GENÉRICO COM ABAS)
 # =============================================================================
-
-def main():
-    # Inicializa o estado da aplicação (só roda uma vez)
-    inicializar_estado()
+def ordens_page(tipo, cor, titulo):
+    st.markdown(f'<h1 class="gradient-text">{titulo}</h1>', unsafe_allow_html=True)
+    st.markdown(f"Ordens {cor}")
     
-    # Exibe mensagem de erro global, se houver (sem quebrar layout)
-    if st.session_state.mensagem_erro:
-        st.error(st.session_state.mensagem_erro)
-        st.session_state.mensagem_erro = None  # limpa após exibir
+    # Filtrar ordens
+    ordens_tipo = [o for o in st.session_state.ordens if o.get('tipo') == tipo]
     
-    # Cria abas nativas do Streamlit (opcional, mas evita perder estado)
-    tab1, tab2 = st.tabs(["📊 Dashboard", "➕ Adicionar Ativo"])
+    # Abas Abertas/Fechadas
+    tab1, tab2 = st.tabs([f"📋 Abertas", f"✅ Fechadas"])
     
     with tab1:
-        # Renderiza o HTML dinâmico (sempre usando dados do session_state)
-        renderizar_html()
+        abertas = [o for o in ordens_tipo if not o.get('is_closed', False)]
+        if abertas:
+            df = pd.DataFrame(abertas)
+            st.dataframe(df, use_container_width=True)
+        else:
+            st.info(f"Nenhuma ordem {tipo} aberta")
     
     with tab2:
-        formulario_novo_ativo()
+        fechadas = [o for o in ordens_tipo if o.get('is_closed', False)]
+        if fechadas:
+            df = pd.DataFrame(fechadas)
+            st.dataframe(df, use_container_width=True)
+        else:
+            st.info(f"Nenhuma ordem {tipo} fechada")
+    
+    # Formulário de nova OS
+    with st.expander(f"➕ Nova OS {cor}", expanded=False):
+        col1, col2 = st.columns(2)
+        with col1:
+            codigo = st.text_input("Código", placeholder=f"OS-{tipo[:3].upper()}-001")
+            titulo_os = st.text_input("Título", placeholder="Ex: Manutenção preventiva")
+        with col2:
+            ativos_opcoes = [f"{a['codigo']} - {a['nome']}" for a in st.session_state.ativos]
+            ativo_selecionado = st.selectbox("Ativo", ativos_opcoes)
+            prioridade = st.selectbox("Prioridade", ["1 - Baixa", "2 - Normal", "3 - Média", "4 - Alta", "5 - Urgente"])
+        
+        descricao = st.text_area("Descrição", height=100)
+        
+        if st.button("💾 Criar OS", use_container_width=True):
+            if codigo and titulo_os:
+                ativo_id = st.session_state.ativos[ativos_opcoes.index(ativo_selecionado)]['id']
+                nova = {
+                    "id": len(st.session_state.ordens) + 1,
+                    "codigo": codigo,
+                    "titulo": titulo_os,
+                    "tipo": tipo,
+                    "asset_id": ativo_id,
+                    "descricao": descricao,
+                    "prioridade": prioridade,
+                    "status": "Aberta",
+                    "is_closed": False,
+                    "criado_em": datetime.now().strftime("%Y-%m-%d %H:%M")
+                }
+                st.session_state.ordens.append(nova)
+                st.success(f"OS {codigo} criada com sucesso!")
+                st.rerun()
+            else:
+                st.error("Preencha código e título")
 
 # =============================================================================
-# 7. PONTO DE ENTRADA
+# RH / USUÁRIOS
 # =============================================================================
+def rh_usuarios():
+    st.markdown('<h1 class="gradient-text">RH / Usuários</h1>', unsafe_allow_html=True)
+    st.markdown("Gestão de manutentores, engenheiros e solicitantes")
+    
+    with st.expander("➕ Novo Usuário", expanded=False):
+        col1, col2 = st.columns(2)
+        with col1:
+            nome = st.text_input("Nome Completo")
+            email = st.text_input("E-mail")
+        with col2:
+            tipo = st.selectbox("Tipo", ["manutentor", "engenheiro", "solicitante", "admin"])
+            senha = st.text_input("Senha", type="password", value="123456")
+        
+        if st.button("💾 Salvar Usuário", use_container_width=True):
+            if nome and email:
+                novo = {
+                    "id": len(st.session_state.usuarios) + 1,
+                    "nome": nome,
+                    "email": email,
+                    "tipo": tipo,
+                    "ativo": True,
+                    "criado_em": datetime.now().strftime("%Y-%m-%d %H:%M")
+                }
+                st.session_state.usuarios.append(novo)
+                st.success(f"Usuário {nome} criado!")
+                st.rerun()
+            else:
+                st.error("Preencha nome e e-mail")
+    
+    st.markdown("---")
+    st.subheader("📋 Lista de Usuários")
+    
+    if st.session_state.usuarios:
+        df = pd.DataFrame(st.session_state.usuarios)
+        st.dataframe(df, use_container_width=True)
+    else:
+        st.info("Nenhum usuário cadastrado")
 
-if __name__ == "__main__":
-    main()
+# =============================================================================
+# TEE CARD
+# =============================================================================
+def tee_card():
+    st.markdown('<h1 class="gradient-text">Tee Card</h1>', unsafe_allow_html=True)
+    st.markdown("Desempenho diário dos manutentores")
+    
+    visualizacao = st.radio("Visualização", ["Diária", "Semanal", "Mensal", "Anual"], horizontal=True)
+    
+    manutentores = [u for u in st.session_state.usuarios if u.get('tipo') == 'manutentor']
+    
+    if manutentores:
+        for m in manutentores:
+            with st.container():
+                col1, col2, col3 = st.columns([2, 1, 1])
+                with col1:
+                    st.write(f"**{m['nome']}**")
+                with col2:
+                    horas = st.number_input(f"Horas", key=f"horas_{m['id']}", min_value=0, step=1, label_visibility="collapsed")
+                with col3:
+                    st.button(f"Registrar", key=f"btn_{m['id']}")
+                st.markdown("---")
+    else:
+        st.info("Nenhum manutentor cadastrado")
+
+# =============================================================================
+# CALENDÁRIO MP
+# =============================================================================
+def calendario_mp():
+    st.markdown('<h1 class="gradient-text">Calendário MP</h1>', unsafe_allow_html=True)
+    st.markdown("Manutenção Planejada")
+    
+    ordens_planejadas = [o for o in st.session_state.ordens if o.get('tipo') == 'planned']
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"""
+        <div class="stCard" style="text-align: center;">
+            <div style="font-size: 48px; font-weight: bold; color: #059669;">{len(ordens_planejadas)}</div>
+            <div>MP's Pendentes</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""
+        <div class="stCard" style="text-align: center;">
+            <div style="font-size: 48px; font-weight: bold; color: #2563EB;">{len([o for o in ordens_planejadas if o.get('is_closed')])}</div>
+            <div>MP's Concluídas</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# =============================================================================
+# FALHA DE EQUIPAMENTO
+# =============================================================================
+def falha_equipamento():
+    st.markdown('<h1 class="gradient-text">Falha de Equipamento</h1>', unsafe_allow_html=True)
+    st.markdown("Registro de falhas e acompanhamento")
+    
+    falhas = [o for o in st.session_state.ordens if o.get('tipo') == 'corrective']
+    abertas = [f for f in falhas if not f.get('is_closed', False)]
+    fechadas = [f for f in falhas if f.get('is_closed', False)]
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"""
+        <div class="stCard" style="text-align: center; border-left: 4px solid #DC2626;">
+            <div style="font-size: 32px; font-weight: bold; color: #DC2626;">{len(abertas)}</div>
+            <div>⚠️ Equipamentos em Falha</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""
+        <div class="stCard" style="text-align: center; border-left: 4px solid #059669;">
+            <div style="font-size: 32px; font-weight: bold; color: #059669;">{len(fechadas)}</div>
+            <div>✅ Falhas Finalizadas</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# =============================================================================
+# INDICADORES (MTBF/MTTR)
+# =============================================================================
+def indicadores():
+    st.markdown('<h1 class="gradient-text">MTBF / MTTR</h1>', unsafe_allow_html=True)
+    st.markdown("Indicadores de performance da manutenção")
+    
+    # Cálculo simulado
+    total_horas = sum([a.get('horas_operacao', 0) for a in st.session_state.ativos])
+    total_falhas = sum([a.get('falhas', 0) for a in st.session_state.ativos])
+    
+    mtbf = total_horas / total_falhas if total_falhas > 0 else 0
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"""
+        <div class="stCard" style="text-align: center;">
+            <div style="font-size: 48px; font-weight: bold; color: #2563EB;">{mtbf:.0f}</div>
+            <div>MTBF (horas entre falhas)</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""
+        <div class="stCard" style="text-align: center;">
+            <div style="font-size: 48px; font-weight: bold; color: #7C3AED;">-</div>
+            <div>MTTR (em desenvolvimento)</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# =============================================================================
+# RELATÓRIOS
+# =============================================================================
+def relatorios():
+    st.markdown('<h1 class="gradient-text">Relatórios</h1>', unsafe_allow_html=True)
+    st.markdown("Exportação de dados")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("📊 Relatório de Ativos", use_container_width=True):
+            if st.session_state.ativos:
+                df = pd.DataFrame(st.session_state.ativos)
+                st.download_button("Download CSV", df.to_csv(index=False), "ativos.csv", "text/csv")
+            else:
+                st.warning("Nenhum dado disponível")
+    
+    with col2:
+        if st.button("📋 Relatório de OS", use_container_width=True):
+            if st.session_state.ordens:
+                df = pd.DataFrame(st.session_state.ordens)
+                st.download_button("Download CSV", df.to_csv(index=False), "ordens.csv", "text/csv")
+            else:
+                st.warning("Nenhum dado disponível")
+
+# =============================================================================
+# ROTEAMENTO DAS PÁGINAS
+# =============================================================================
+pagina = st.session_state.pagina_atual
+
+if pagina == "Dashboard":
+    dashboard()
+elif pagina == "Ativos":
+    ativos_page()
+elif pagina == "Ordens Planejadas (Verde)":
+    ordens_page("planned", "Verde", "Ordens Planejadas (Verde)")
+elif pagina == "Ordens Preventivas (Azul)":
+    ordens_page("preventive", "Azul", "Ordens Preventivas (Azul)")
+elif pagina == "Ordens Corretivas (Vermelha)":
+    ordens_page("corrective", "Vermelha", "Ordens Corretivas (Vermelha)")
+elif pagina == "RH / Usuários":
+    rh_usuarios()
+elif pagina == "Tee Card":
+    tee_card()
+elif pagina == "Calendário MP":
+    calendario_mp()
+elif pagina == "Falha de Equipamento":
+    falha_equipamento()
+elif pagina == "Indicadores (MTBF/MTTR)":
+    indicadores()
+elif pagina == "Relatórios":
+    relatorios()
